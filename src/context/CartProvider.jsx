@@ -1,24 +1,10 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createContext, useState, useContext, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { CartContext } from './CartContext';
 
-// Create the context
-const CartContext = createContext(undefined);
-
-// Custom hook to use cart context - EXPORTED
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within CartProvider');
-  }
-  return context;
-};
-
-// Cart Provider Component - EXPORTED
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
 
-  // Load cart from localStorage on mount
   useEffect(() => {
     const loadCart = () => {
       try {
@@ -36,7 +22,6 @@ export const CartProvider = ({ children }) => {
     loadCart();
   }, []);
 
-  // Save cart to localStorage whenever it changes
   useEffect(() => {
     try {
       localStorage.setItem('cart', JSON.stringify(cartItems));
@@ -45,7 +30,6 @@ export const CartProvider = ({ children }) => {
     }
   }, [cartItems]);
 
-  // Add item to cart
   const addToCart = (product, quantity = 1) => {
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((item) => item._id === product._id);
@@ -63,7 +47,6 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  // Remove item from cart
   const removeFromCart = (productId) => {
     setCartItems((prevItems) => {
       const filtered = prevItems.filter((item) => item._id !== productId);
@@ -72,7 +55,6 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  // Update item quantity
   const updateQuantity = (productId, quantity) => {
     if (quantity <= 0) {
       removeFromCart(productId);
@@ -85,14 +67,12 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  // Clear entire cart
   const clearCart = () => {
     setCartItems([]);
     localStorage.removeItem('cart');
     toast.success('Cart cleared');
   };
 
-  // Calculate cart total
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
       const price = item.discountPrice || item.price;
@@ -100,23 +80,19 @@ export const CartProvider = ({ children }) => {
     }, 0);
   };
 
-  // Get total number of items in cart
   const getCartCount = () => {
     return cartItems.reduce((count, item) => count + item.quantity, 0);
   };
 
-  // Check if product is in cart
   const isInCart = (productId) => {
     return cartItems.some((item) => item._id === productId);
   };
 
-  // Get item quantity in cart
   const getItemQuantity = (productId) => {
     const item = cartItems.find((item) => item._id === productId);
     return item ? item.quantity : 0;
   };
 
-  // Value object to provide to consumers
   const value = {
     cartItems,
     addToCart,
@@ -131,6 +107,3 @@ export const CartProvider = ({ children }) => {
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
-
-// Default export (optional, but good practice)
-export default CartProvider;
